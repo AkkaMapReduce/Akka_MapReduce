@@ -2,26 +2,27 @@ package com.slave
 
 import akka.actor.{Actor, ActorSystem, Props, Status}
 import akka.event.Logging
+import akka.serialization.SerializationExtension
 import com.slave.messages._
 
-abstract class func_template {
-  def run(x: Int): Int
-}
+//abstract class func_template {
+//  def run(x: Int): Int
+//}
 
-class Slave extends Actor {
+class Slave(system: ActorSystem) extends Actor {
   val log = Logging(context.system, this)
+  val serialization = SerializationExtension(system)
 
-  // For testing purpose only
-  // ====================================================
-  var forTesting: Option[Int] = None
-  // ====================================================
+
 
   override def receive = {
 
-    case RunRequest(func, input) =>
+    case RunRequest(bytesArray, input) =>
       log.info("received RunRequest")
 
-      val result: Option[Int] = Some(func(input))
+      val serializer = serialization.findSerializerFor(_:Int => Int)
+
+      val func = serializer.fromBinary
 
       log.info("RunRequest result: {}", result)
       result match {
@@ -49,19 +50,6 @@ class Slave extends Actor {
         case None => sender() ! Status.Failure(new ErrorException)
       }
 
-    case RunObjectRequest(obj, input) =>
-      log.info("received RunObjectRequest")
-
-      val result: Option[Int] = Some(obj.run(input))
-      sender() ! 50
-//      forTesting = result
-//      result match {
-//        case Some(x) => sender() ! x
-//        case None => sender() ! Status.Failure(new ErrorException)
-//      }
-
-    // ====================================================
-
     case o =>
       log.info("Well I'm Fucked")
       Status.Failure(new ClassNotFoundException)
@@ -70,5 +58,5 @@ class Slave extends Actor {
 
 object Main extends App {
   val system = ActorSystem("Slave")
-  val helloActor = system.actorOf(Props[Slave], name = "slave")
+  val helloActor = system.actorOf(Props(new Slave(system)), name = "slave")
 }
