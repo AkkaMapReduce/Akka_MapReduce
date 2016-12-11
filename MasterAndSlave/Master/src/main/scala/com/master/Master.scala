@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
 import com.slave.func_template
-import com.slave.messages.{AddMeOneRequest, PingRequest, RunObjectRequest}
+import com.slave.messages._
 
 import scala.concurrent.duration._
 
@@ -15,6 +15,14 @@ class Master(remoteAddress: String){
 
   def run(func: func_template, input: Int) = {
     remoteDb ? RunObjectRequest(func, input)
+  }
+
+  def fun(prog: Int => Int, input: Int) = {
+    remoteDb ? FunRequest(prog, input)
+  }
+
+  def sendJar() = {
+    remoteDb ? JarReady
   }
 
 

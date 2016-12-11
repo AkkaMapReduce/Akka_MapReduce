@@ -1,6 +1,7 @@
 package com.master
 
 
+import akka.actor.{ActorSystem, Props}
 import com.slave.func_template
 import org.scalatest.{FunSpecLike, Matchers}
 
@@ -28,32 +29,47 @@ class MasterSpec extends FunSpecLike with Matchers {
     }
   }
 
-  describe("func: add20 && input: 30") {
-    it("should add 20 to 30"){
-      case class add20() extends func_template {
-        def run(x: Int) = x + 20
-      }
-      val obj = new add20()
-      val x = 30
+  def JarServer() = {
+    import java.net._
+    import java.io._
+    import scala.io._
 
-      val futureResult = client.run(obj, x)
+    val server = new ServerSocket(9999)
+
+    //Master should ping the slave actor to request for jar file
+    //    while (true) {
+    val s = server.accept()
+    val in = new BufferedSource(s.getInputStream()).getLines()
+    val out = s.getOutputStream()
+
+    val filename = "src/main/resources/test.txt"
+    val f = new FileInputStream(filename)
+    val bos = new BufferedOutputStream(out)
+    var c = 0;
+    while ({c = f.read; c != -1 }) {
+      bos.write(c)
+    }
+    //    Stream.continually(f.read).takeWhile(_ != -1).foreach(bos.write)
+
+    f.close
+    bos.flush()
+    bos.close
+
+    out.flush()
+    s.close()
+    //    }
+  }
+
+  describe("connect test") {
+    it("should bla bla") {
+      val futureResult = client.sendJar()
+
+      JarServer()
+
       val result = Await.result(futureResult, 10 seconds)
-      result should equal(50)
+      result should equal("Done!")
     }
   }
-//  describe("func: minus30 && input: 45") {
-//    it("should minus 30 from 45") {
-//      case class minus30() extends func_template {
-//        def run(x: Int) = x - 30
-//      }
-//      val obj = new minus30
-//      val x = 45
-//
-//      val futureResult = client.run(obj, x)
-//      val result = Await.result(futureResult, 10 seconds)
-//      result should equal(15)
-//    }
-//  }
 
 }
 
