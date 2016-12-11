@@ -60,8 +60,8 @@ class MasterSpec extends FunSpecLike with Matchers {
     //    }
   }
 
-  describe("connect test") {
-    it("should bla bla") {
+  describe("send jar file") {
+    it("should save jar file on slave and return Done!") {
       val futureResult = client.sendJar()
 
       JarServer()
