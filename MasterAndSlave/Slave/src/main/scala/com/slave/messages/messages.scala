@@ -1,7 +1,10 @@
 package com.slave.messages
 
 
-case class RunRequest(bytesArray: Array[Byte], input: Int)
+case class RunMapRequest[T](xs: Seq[T])
+case class RunMapReduceRequest[A, B](key: A, xs: Seq[B])
+
+//case class RunRequest(bytesArray: Array[Byte], input: Int)
 case class ErrorException() extends Exception
 
 

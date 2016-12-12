@@ -2,33 +2,37 @@ package com.slave
 
 import akka.actor.{Actor, ActorSystem, Props, Status}
 import akka.event.Logging
-import akka.serialization.SerializationExtension
+import com.mapper.TestGuy
 import com.slave.messages._
 
-//abstract class func_template {
-//  def run(x: Int): Int
-//}
 
-class Slave(system: ActorSystem) extends Actor {
+class Slave() extends Actor {
   val log = Logging(context.system, this)
-  val serialization = SerializationExtension(system)
-
-
 
   override def receive = {
 
-    case RunRequest(bytesArray, input) =>
-      log.info("received RunRequest")
+    case RunMapRequest(xs: Seq[Int]) => {
+      log.info("received RunMapRequest")
+      log.info(xs.toString())
 
-      val serializer = serialization.findSerializerFor(_:Int => Int)
+      val res = TestGuy.Map(xs)
+      log.info(res.toString())
 
-      val func = serializer.fromBinary
+      val resMap = res.groupBy(_._1)
+      log.info(resMap.toString())
 
-      log.info("RunRequest result: {}", result)
-      result match {
-        case Some(x) => sender() ! x
-        case None => sender() ! Status.Failure(new ErrorException)
-      }
+      sender() ! resMap
+    }
+
+    case RunMapReduceRequest(key: String, xs: Seq[Double]) => {
+      log.info("received RunMapReduceRequest")
+      log.info(xs.toString())
+
+      val res = TestGuy.MapReduce(key, xs)
+      log.info(res.toString)
+
+      sender() ! res
+    }
 
     // For testing purpose only
     // ====================================================
@@ -58,5 +62,5 @@ class Slave(system: ActorSystem) extends Actor {
 
 object Main extends App {
   val system = ActorSystem("Slave")
-  val helloActor = system.actorOf(Props(new Slave(system)), name = "slave")
+  val helloActor = system.actorOf(Props(new Slave), name = "slave")
 }
