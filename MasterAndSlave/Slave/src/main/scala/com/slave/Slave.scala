@@ -5,6 +5,8 @@ import java.net.InetSocketAddress
 import akka.actor.{Actor, ActorSystem, Props, Status}
 import akka.event.Logging
 import com.slave.messages._
+import java.net._
+import java.io._
 
 abstract class func_template {
   def run(x: Int): Int
@@ -22,9 +24,6 @@ class Slave extends Actor {
   // ====================================================
 
   def receiveJarFile() = {
-    import java.net._
-    import java.io._
-
     val s = new Socket(InetAddress.getByName("localhost"), 9999)
     lazy val in = s.getInputStream()
     val out = new PrintStream(s.getOutputStream())
@@ -32,7 +31,7 @@ class Slave extends Actor {
     out.println("Give me the jar file!")
     out.flush()
 
-    val file = new FileOutputStream("src/main/resources/test.txt" )
+    val file = new FileOutputStream("src/main/resources/mapReduce.jar" )
 
     var count = 0
     while({count = in.read; count != -1}) {
@@ -89,6 +88,56 @@ class Slave extends Actor {
       log.info("received JarRequest")
 
       receiveJarFile()
+
+
+//      val file: File  = new File("src/main/resources/mapReduce.jar")
+//
+//      val url: URL = file.toURI().toURL()
+//      val cl: URLClassLoader = new URLClassLoader(Array(url))
+//      val cls: Class[_] = cl.loadClass("MapTemplate")
+//
+//      val testguy: Class[_] = cl.loadClass("TestGuy")
+//      println(cls.getCanonicalName)
+//      println(testguy.getCanonicalName)
+//
+//      val m = testguy.getMethod("Map",  Seq[Int].asInstanceOf[AnyRef].getClass); // get the method you want to call
+//      val xs = Seq(1,2,3); // the arguments. Change this if you want to pass different args
+//      val ans = m.invoke(null, xs);
+//      println(ans.toString)
+//      println("__")
+//
+//      val tint = Seq[Int].getClass
+//      val n = testguy.getMethod("MapReduce", "".asInstanceOf[AnyRef].getClass, tint); // get the method you want to call
+//      val key = "A"
+//      val seq = Seq(1,2,3); // the arguments. Change this if you want to pass different args
+//      val res = n.invoke(null, key, seq);
+//      println(res.toString)
+//      println("__")
+
+
+      //////////
+
+//      val url: URL = file.toURI().toURL()
+//      val classLoader = ClassLoader.getSystemClassLoader()
+//      val method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+//      method.setAccessible(true);
+//      method.invoke(classLoader, url);
+      /////////////
+//      val url: URL = file.toURI().toURL()
+//      val loader = URLClassLoader.newInstance(
+//        Array(url),
+//        getClass().getClassLoader()
+//      );
+//      val clazz = Class.forName("mypackage.MyClass", true, loader);
+//      val runClass = clazz.asSubclass(Runnable.class);
+//      // Avoid Class.newInstance, for it is evil.
+//      Constructor<? extends Runnable> ctor = runClass.getConstructor();
+//      Runnable doRun = ctor.newInstance();
+//      doRun.run();
+
+//      testguy.Map()
+
+      //doMapWork()
 
       sender() ! "Done!"
 

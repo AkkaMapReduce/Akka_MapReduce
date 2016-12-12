@@ -42,7 +42,7 @@ class MasterSpec extends FunSpecLike with Matchers {
     val in = new BufferedSource(s.getInputStream()).getLines()
     val out = s.getOutputStream()
 
-    val filename = "src/main/resources/test.txt"
+    val filename = "src/main/resources/mapReduce.jar"
     val f = new FileInputStream(filename)
     val bos = new BufferedOutputStream(out)
     var c = 0;
