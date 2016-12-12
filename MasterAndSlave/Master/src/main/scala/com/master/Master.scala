@@ -3,38 +3,33 @@ package com.master
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
-import com.slave.messages.RunMapRequest
+import com.slave.messages._
 
 import scala.concurrent.duration._
 
-class Master(remoteAddresses: Seq[String]){
+class Master(remoteAddress: String){
   private implicit val timeout = Timeout(2 seconds)
-  private implicit val system = ActorSystem("Master")
-  private val remotes = remoteAddresses.map(
-    remoteAddress => system.actorSelection(s"akka.tcp://Slave@$remoteAddress/user/slave"))
-  private val numRemotes = remotes.size
+  private implicit val system = ActorSystem("LocalSystem")
+  private val remoteDb = system.actorSelection(s"akka.tcp://Slave@$remoteAddress/user/slave")
 
   def map(seq: Seq[Int]) = {
-    val subSeq = seq.grouped(numRemotes)
-    var counter = numRemotes
-    val res = subSeq.map(ss => {
-      remotes(counter) ? RunMapRequest(seq)
-      counter -= 1
-    })
+    remoteDb ? RunMapRequest(seq)
   }
 
-//  def mapReduce(grp: String, seq: Seq[Double]) = {
-//    remoteDb ? RunMapReduceRequest(grp, seq)
-//  }
+  def mapReduce(grp: String, seq: Seq[Double]) = {
+    remoteDb ? RunMapReduceRequest(grp, seq)
+  }
+
+
 
   // For testing purpose only
   // ====================================================
-//  def ping() = {
-//    remotes(0) ? PingRequest()
-//  }
-//
-//  def addOne(x: Int) = {
-//    remotes(0) ? AddMeOneRequest(x)
-//  }
+  def ping() = {
+    remoteDb ? PingRequest()
+  }
+
+  def addOne(x: Int) = {
+    remoteDb ? AddMeOneRequest(x)
+  }
   // ====================================================
 }
