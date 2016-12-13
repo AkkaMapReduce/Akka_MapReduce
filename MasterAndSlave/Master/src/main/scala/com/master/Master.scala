@@ -13,7 +13,17 @@ class Master(remoteAddress: String){
   private val remoteDb = system.actorSelection(s"akka.tcp://Slave@$remoteAddress/user/slave")
 
   def map(seq: Seq[Int]) = {
-    remoteDb ? RunMapRequest(seq)
+//    remoteDb ? RunMapRequest(seq)
+    val addresses = Seq("127.0.0.1:2552", "127.0.0.1:2553")
+    val remotes = addresses.map(add => system.actorSelection(s"akka.tcp://Slave@$add/user/slave"))
+    var idx = 0
+    seq.grouped(seq.size/remotes.size)
+        .toList
+        .map(subSeq => {
+          remotes(idx) ? RunMapRequest(subSeq)
+          idx += 1
+        })
+
   }
 
   def mapReduce(grp: String, seq: Seq[Double]) = {
