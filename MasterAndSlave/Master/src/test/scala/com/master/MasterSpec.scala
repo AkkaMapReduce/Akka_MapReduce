@@ -1,5 +1,6 @@
 package com.master
 
+import com.slave.messages.JarReceived
 import org.scalatest.{FunSpecLike, Matchers}
 
 import scala.concurrent.Await
@@ -24,6 +25,48 @@ class MasterSpec extends FunSpecLike with Matchers {
       val futureResult = client.addOne(x)
       val result = Await.result(futureResult, 10 seconds)
       result should equal(11)
+    }
+  }
+
+  def JarServer() = {
+    import java.net._
+    import java.io._
+    import scala.io._
+
+    val server = new ServerSocket(9999)
+
+    //Master should ping the slave actor to request for jar file
+    //    while (true) {
+    val s = server.accept()
+    val in = new BufferedSource(s.getInputStream()).getLines()
+    val out = s.getOutputStream()
+
+    val filename = "src/main/resources/mapReduce.jar"
+    val f = new FileInputStream(filename)
+    val bos = new BufferedOutputStream(out)
+    var c = 0;
+    while ({c = f.read; c != -1 }) {
+      bos.write(c)
+    }
+    //    Stream.continually(f.read).takeWhile(_ != -1).foreach(bos.write)
+
+    f.close
+    bos.flush()
+    bos.close
+
+    out.flush()
+    s.close()
+    //    }
+  }
+
+  describe("send jar file") {
+    it("should save jar file on slave and return Done!") {
+      val futureResult = client.sendJar()
+
+      JarServer()
+
+      val result = Await.result(futureResult, 10 seconds)
+      result should equal(JarReceived)
     }
   }
 

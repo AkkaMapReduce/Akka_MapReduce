@@ -14,6 +14,10 @@ class Master(remoteAddress: String){
   private implicit val system = ActorSystem("LocalSystem")
   private val remoteDb = system.actorSelection(s"akka.tcp://Slave@$remoteAddress/user/slave")
 
+  def sendJar() = {
+    remoteDb ? JarReady
+  }
+
   def map[T](seq: Seq[T]) = {
 //    remoteDb ? RunMapRequest(seq)
     val addresses = Seq("127.0.0.1:2552", "127.0.0.1:2553")
@@ -26,7 +30,6 @@ class Master(remoteAddress: String){
           remotes(idx) ? RunMapRequest(subSeq)
         })
         )
-
 
   }
 
