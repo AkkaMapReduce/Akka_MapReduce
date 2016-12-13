@@ -14,6 +14,37 @@ class Master(remoteAddress: String){
   private implicit val system = ActorSystem("LocalSystem")
   private val remoteDb = system.actorSelection(s"akka.tcp://Slave@$remoteAddress/user/slave")
 
+  def JarServer() = {
+    import java.net._
+    import java.io._
+    import scala.io._
+
+    val server = new ServerSocket(9999)
+
+    //Master should ping the slave actor to request for jar file
+    //    while (true) {
+    val s = server.accept()
+    val in = new BufferedSource(s.getInputStream()).getLines()
+    val out = s.getOutputStream()
+
+    val filename = "src/main/resources/mapReduce.jar"
+    val f = new FileInputStream(filename)
+    val bos = new BufferedOutputStream(out)
+    var c = 0;
+    while ({c = f.read; c != -1 }) {
+      bos.write(c)
+    }
+    //    Stream.continually(f.read).takeWhile(_ != -1).foreach(bos.write)
+
+    f.close
+    bos.flush()
+    bos.close
+
+    out.flush()
+    s.close()
+    //    }
+  }
+
   def sendJar() = {
     remoteDb ? JarReady
   }
