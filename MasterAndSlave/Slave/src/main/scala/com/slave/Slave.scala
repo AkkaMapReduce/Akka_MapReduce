@@ -11,11 +11,10 @@ class Slave() extends Actor {
 
   override def receive = {
 
-    case RunMapRequest(xs: Seq[Int]) => {
+    case RunMapRequest(xs: Any) => {
       log.info("received RunMapRequest")
       log.info(xs.toString())
-
-      val res = TestGuy.Map(xs)
+      val res = TestGuy.Map(xs.asInstanceOf[TestGuy.MapSeq.type])
       log.info(res.toString())
 
       val resMap = res.groupBy(_._1)
@@ -24,11 +23,12 @@ class Slave() extends Actor {
       sender() ! resMap
     }
 
-    case RunMapReduceRequest(key: String, xs: Seq[Double]) => {
+    case RunMapReduceRequest(key: Any, xs: Any) => {
       log.info("received RunMapReduceRequest")
       log.info(xs.toString())
 
-      val res = TestGuy.MapReduce(key, xs)
+      val res = TestGuy.MapReduce(key.asInstanceOf[TestGuy.MapReduceKey.type ],
+                                  xs.asInstanceOf[TestGuy.MapReduceSeq.type])
       log.info(res.toString)
 
       sender() ! res
