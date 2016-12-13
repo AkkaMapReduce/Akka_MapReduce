@@ -9,7 +9,36 @@ import com.slave.messages._
 class Slave() extends Actor {
   val log = Logging(context.system, this)
 
+  def receiveJarFile() = {
+    import java.net._
+    import java.io._
+
+    val s = new Socket(InetAddress.getByName("localhost"), 9999)
+    lazy val in = s.getInputStream()
+    val out = new PrintStream(s.getOutputStream())
+
+    out.println("Give me the jar file!")
+    out.flush()
+
+    val file = new FileOutputStream("src/main/resources/test.txt" )
+
+    var count = 0
+    while({count = in.read; count != -1}) {
+      file.write(count)
+    }
+
+    file.close
+    s.close()
+  }
+
   override def receive = {
+
+    case JarReady =>
+      log.info("received JarRequest")
+
+      receiveJarFile()
+
+      sender() ! JarReceived
 
     case RunMapRequest(xs: Seq[Int]) => {
       log.info("received RunMapRequest")

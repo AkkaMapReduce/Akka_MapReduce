@@ -3,8 +3,9 @@ package com.master
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.util.Timeout
-import com.slave.messages.RunMapRequest
+import com.slave.messages.{AddMeOneRequest, JarReady, PingRequest, RunMapRequest}
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
 
 class Master(remoteAddresses: Seq[String]){
@@ -14,7 +15,12 @@ class Master(remoteAddresses: Seq[String]){
     remoteAddress => system.actorSelection(s"akka.tcp://Slave@$remoteAddress/user/slave"))
   private val numRemotes = remotes.size
 
-  def map(seq: Seq[Int]) = {
+  def sendJar(): (List[Future[Any]], Int) = {
+    (remotes.map(_ ? JarReady).toList, remotes.size)
+  }
+
+
+  def map(seq: Seq[Int]): Future[Any] = {
     val subSeq = seq.grouped(numRemotes)
     var counter = numRemotes
     val res = subSeq.map(ss => {
@@ -29,12 +35,12 @@ class Master(remoteAddresses: Seq[String]){
 
   // For testing purpose only
   // ====================================================
-//  def ping() = {
-//    remotes(0) ? PingRequest()
-//  }
-//
-//  def addOne(x: Int) = {
-//    remotes(0) ? AddMeOneRequest(x)
-//  }
+  def ping() = {
+    remotes(0) ? PingRequest()
+  }
+
+  def addOne(x: Int) = {
+    remotes(0) ? AddMeOneRequest(x)
+  }
   // ====================================================
 }

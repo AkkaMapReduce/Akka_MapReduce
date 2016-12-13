@@ -7,6 +7,9 @@ case class RunMapReduceRequest[A, B](key: A, xs: Seq[B])
 //case class RunRequest(bytesArray: Array[Byte], input: Int)
 case class ErrorException() extends Exception
 
+case object JarReady
+case object JarReceived
+
 
 // For testing purpose only
 // ====================================================
